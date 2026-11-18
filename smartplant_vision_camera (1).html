@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPlant Vision — Plant Dashboard</title>
+<style>
+:root{--bg:#f5f7f1;--panel:#fff;--ink:#1e3026;--muted:#7b887e;--green:#397b50;--green2:#e5f1e5;--line:#e7ece4;--yellow:#f0bf58;--shadow:0 12px 35px rgba(35,61,42,.06)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.app{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:100vh}
+.sidebar{background:#fff;border-right:1px solid var(--line);padding:27px 17px;display:flex;flex-direction:column;gap:28px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 10px}.logo{height:39px;width:39px;background:var(--green);border-radius:13px;display:grid;place-items:center;color:#fff;font-size:21px}.brand strong{font-size:15px;letter-spacing:-.3px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.nav-label{font-size:10px;color:#9aa49b;font-weight:800;letter-spacing:1.5px;padding:0 12px;margin-bottom:-15px}
+nav{display:grid;gap:6px}.nav-item{border:0;background:transparent;color:#78857a;display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;text-align:left;font-size:13px;font-weight:650;cursor:pointer}.nav-item .ico{width:20px;text-align:center;font-size:16px}.nav-item.active{background:var(--green2);color:var(--green)}.side-bottom{margin-top:auto;background:#f5f8f2;border-radius:16px;padding:15px}.side-bottom .mini-leaf{font-size:24px}.side-bottom strong{display:block;font-size:12px;margin:8px 0 5px}.side-bottom p{font-size:11px;line-height:1.6;color:var(--muted);margin:0}
+main{padding:30px clamp(18px,3vw,42px) 36px;max-width:1600px;width:100%;margin:0 auto}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}.eyebrow{font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:var(--green);font-weight:800}.topbar h1{font-size:29px;letter-spacing:-1px;margin:7px 0 0}.top-actions{display:flex;gap:10px;align-items:center}.date-pill,.status-pill{padding:10px 13px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:12px;color:#607064}.avatar{width:39px;height:39px;border-radius:13px;background:#dcebd8;display:grid;place-items:center;color:var(--green);font-weight:800}
+.welcome{background:#254c35;color:#fff;border-radius:22px;padding:25px 28px;display:flex;justify-content:space-between;gap:20px;align-items:center;position:relative;overflow:hidden;box-shadow:var(--shadow)}.welcome:after{content:"";position:absolute;width:250px;height:250px;border:1px solid #ffffff18;border-radius:50%;right:90px;top:-145px;box-shadow:0 0 0 28px #ffffff08,0 0 0 58px #ffffff06}.welcome h2{font-size:22px;margin:8px 0}.welcome p{font-size:13px;color:#d3e2d5;margin:0;line-height:1.6;max-width:560px}.welcome-tag{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#c8e5c9;font-weight:800}.welcome-plant{font-size:58px;z-index:1;margin-right:12px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin:27px 0 13px}.section-head h2{font-size:16px;margin:0;letter-spacing:-.3px}.subtle{font-size:11px;color:var(--muted)}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.metric,.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:19px;box-shadow:var(--shadow)}.metric-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}.metric-icon{width:35px;height:35px;display:grid;place-items:center;border-radius:11px;background:#eef5eb;font-size:17px}.metric-value{font-size:28px;font-weight:750;letter-spacing:-1px;margin:15px 0 4px}.metric-value span{font-size:13px;color:var(--muted);font-weight:500;letter-spacing:0}.metric-foot{font-size:11px;color:var(--muted)}.good{color:var(--green);font-weight:700}
+.content-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:16px}.card{padding:20px}.card-title{display:flex;justify-content:space-between;align-items:center;gap:10px}.card-title h3{font-size:14px;margin:0}.tag{font-size:10px;border-radius:8px;padding:6px 8px;background:#f0f5ed;color:var(--green);font-weight:750}.camera-preview{margin-top:16px;min-height:230px;border-radius:14px;background:linear-gradient(140deg,#e2ead9,#b9cdb0);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}.camera-scene{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 75%,#9db58a 0,#9db58a 14%,transparent 15%),linear-gradient(#dce7d4,#b6caa8)}.camera-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:3;background:#17251b;display:none}.camera-preview.live .camera-video{display:block}.camera-preview.live .camera-scene,.camera-preview.live .pot,.camera-preview.live .soil,.camera-preview.live .stem,.camera-preview.live .leaf{display:none}.camera-preview.live .camera-label{background:#173b28e8;color:#fff}.camera-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}.camera-select{min-width:150px;flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:#fff;color:var(--ink);font:inherit;font-size:11px}.camera-help{font-size:10px;color:var(--muted);line-height:1.5;margin:9px 0 0}.ai-panel{margin-top:16px;padding:15px;border:1px solid #e3ebdf;border-radius:14px;background:#f8faf6}.ai-results{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.ai-result{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px}.ai-result span{display:block;font-size:10px;color:var(--muted);margin-bottom:6px}.ai-result strong{font-size:13px}.ai-meter{height:7px;border-radius:9px;background:#edf1e9;overflow:hidden;margin-top:9px}.ai-meter i{display:block;height:100%;width:0;background:var(--green);border-radius:9px}.ai-disclaimer{font-size:10px;line-height:1.55;color:var(--muted);margin:11px 0 0}.ai-status{font-size:10px;color:var(--green);font-weight:800;letter-spacing:.4px}@media(max-width:600px){.ai-results{grid-template-columns:1fr}}.history-img img{width:100%;height:100%;object-fit:cover;display:block}.pot{position:absolute;bottom:24px;width:95px;height:80px;background:linear-gradient(90deg,#a76b46,#c88c61,#a76b46);clip-path:polygon(8% 0,92% 0,80% 100%,20% 100%);z-index:2}.soil{position:absolute;bottom:93px;width:87px;height:17px;border-radius:50%;background:#574632;z-index:3}.stem{position:absolute;bottom:100px;width:5px;height:100px;background:#47754a;z-index:4;border-radius:8px;transform:rotate(3deg)}.leaf{position:absolute;width:60px;height:34px;background:linear-gradient(130deg,#6c9a5e,#2f6c45);border-radius:100% 0 100% 0;z-index:4}.leaf.l1{bottom:151px;left:calc(50% - 57px);transform:rotate(8deg)}.leaf.l2{bottom:176px;left:calc(50% + 2px);transform:rotate(75deg) scale(.95)}.leaf.l3{bottom:127px;left:calc(50% + 4px);transform:rotate(165deg) scale(.8)}.leaf.l4{bottom:201px;left:calc(50% - 37px);transform:rotate(-10deg) scale(.7)}.camera-label{position:absolute;top:12px;left:12px;z-index:5;background:#ffffffd9;border-radius:8px;padding:7px 9px;font-size:10px;color:#415343;font-weight:700}.camera-time{position:absolute;bottom:12px;left:12px;z-index:5;background:#173b28d9;color:#fff;border-radius:8px;padding:7px 9px;font-size:10px}.camera-note{font-size:11px;color:var(--muted);margin:12px 0 0;line-height:1.5}.button{border:0;border-radius:10px;padding:10px 13px;font-weight:750;font-size:11px;cursor:pointer;transition:.18s}.button-primary{background:var(--green);color:white}.button-primary:hover{background:#2c653f}.button-light{background:#f0f5ed;color:var(--green);border:1px solid #e2ebde}.moisture-main{display:flex;align-items:center;gap:18px;margin:22px 0 17px}.gauge{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--green) 0 62%,#edf1e9 62% 100%);position:relative;flex-shrink:0}.gauge:before{content:"";position:absolute;inset:9px;background:#fff;border-radius:50%}.gauge-inner{position:relative;text-align:center}.gauge-inner strong{font-size:25px;letter-spacing:-1px}.gauge-inner span{display:block;font-size:10px;color:var(--muted)}.moisture-copy strong{font-size:14px}.moisture-copy p{font-size:11px;color:var(--muted);line-height:1.6;margin:7px 0}.range-wrap{margin-top:17px}.range-wrap label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:9px}.range-wrap input{width:100%;accent-color:var(--green);cursor:pointer}.range-ends{display:flex;justify-content:space-between;font-size:9px;color:#9aa49b;margin-top:5px}
+.automation{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}.automation:last-of-type{border-bottom:0}.automation strong{display:block;font-size:12px}.automation p{font-size:10px;color:var(--muted);margin:5px 0 0}.toggle{border:0;width:42px;height:24px;background:#d7ded5;border-radius:20px;padding:3px;cursor:pointer;flex-shrink:0}.toggle:after{content:"";display:block;width:18px;height:18px;background:white;border-radius:50%;transition:.18s;box-shadow:0 1px 3px #0002}.toggle.on{background:var(--green)}.toggle.on:after{transform:translateX(18px)}.pump-status{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);margin-top:15px}.dot{width:7px;height:7px;border-radius:50%;background:#8e9c8f}.dot.on{background:#3d9a5b;box-shadow:0 0 0 4px #3d9a5b18}
+.history{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:15px}.history-item{border:1px solid var(--line);border-radius:13px;overflow:hidden}.history-img{height:95px;background:linear-gradient(#dfe9d8,#b9cda9);position:relative;display:grid;place-items:center;font-size:39px}.history-img:after{content:"";position:absolute;bottom:0;left:0;right:0;height:20px;background:#a6bd93}.history-info{padding:10px}.history-info strong{font-size:11px;display:block}.history-info span{font-size:10px;color:var(--muted);display:block;margin-top:4px}.history-placeholder{border:1px dashed #d7e0d3;border-radius:13px;padding:18px;text-align:center;color:var(--muted);font-size:11px;line-height:1.6;margin-top:15px}
+.footer{font-size:10px;color:#9aa49b;text-align:center;margin-top:27px}.toast{position:fixed;bottom:20px;right:20px;background:#213f2d;color:#fff;padding:12px 16px;border-radius:12px;font-size:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:900px){.app{grid-template-columns:72px minmax(0,1fr)}.sidebar{padding:22px 10px;align-items:center}.brand{padding:0}.brand-text,.nav-label,.nav-item span:not(.ico),.side-bottom{display:none}.nav-item{justify-content:center;width:48px;padding:13px}.content-grid{grid-template-columns:1fr}.welcome-plant{font-size:45px}.metrics{gap:10px}.metric{padding:15px}}
+@media(max-width:600px){.sim-grid{grid-template-columns:1fr!important}.app{display:block}.sidebar{display:none}main{padding:20px 14px}.topbar{align-items:flex-start}.topbar h1{font-size:24px}.date-pill{display:none}.welcome{padding:21px}.welcome-plant{display:none}.metrics{grid-template-columns:1fr}.metric{display:grid;grid-template-columns:1fr auto;align-items:center}.metric-value{margin:8px 0 2px}.metric-foot{grid-column:1}.metric-icon{grid-column:2;grid-row:1 / span 2}.history{grid-template-columns:1fr}.history-img{height:110px}.top-actions .status-pill{display:none}}
+</style>
+
+<style>
+.extra-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:11px;color:var(--muted);font-weight:700}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px;font:inherit;font-size:12px;color:var(--ink)}
+.field textarea{min-height:75px;resize:vertical}.journal-entry{border:1px solid var(--line);border-radius:13px;padding:14px;display:flex;gap:12px;align-items:flex-start}.journal-entry+.journal-entry{margin-top:10px}.entry-icon{width:42px;height:42px;border-radius:12px;background:#edf5e9;display:grid;place-items:center;font-size:20px;flex-shrink:0}.entry-body{flex:1;min-width:0}.entry-body strong{font-size:12px}.entry-body p{font-size:11px;color:var(--muted);line-height:1.5;margin:5px 0}.entry-meta{font-size:10px;color:#94a095}.delete-entry{border:0;background:#fff0ed;color:#a44b3c;border-radius:8px;padding:7px;cursor:pointer;font-size:10px}.alert-row{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}.alert-row:last-child{border-bottom:0}.alert-symbol{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#fff1d8;font-size:16px;flex-shrink:0}.alert-row strong{font-size:12px}.alert-row p{font-size:11px;color:var(--muted);line-height:1.5;margin:5px 0}.chart-wrap{height:220px;margin-top:15px;position:relative}.chart-wrap canvas{width:100%;height:100%}.statline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.statbox{background:#f6f8f3;border-radius:12px;padding:13px}.statbox span{font-size:10px;color:var(--muted);display:block}.statbox strong{font-size:19px;display:block;margin-top:5px}.project-step{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.step-num{width:29px;height:29px;border-radius:10px;background:#e5f1e5;color:var(--green);font-size:12px;font-weight:800;display:grid;place-items:center;flex-shrink:0}.step-copy strong{font-size:12px}.step-copy p{font-size:11px;color:var(--muted);line-height:1.6;margin:5px 0 0}.empty-state{border:1px dashed #d7e0d3;border-radius:12px;padding:20px;text-align:center;color:var(--muted);font-size:11px;line-height:1.6}
+@media(max-width:600px){.extra-grid,.form-grid{grid-template-columns:1fr}.statline{grid-template-columns:1fr 1fr 1fr}}
+</style>
+
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="logo">✿</div><div class="brand-text"><strong>SmartPlant Vision</strong><small>GROW SMARTER</small></div></div>
+  <div class="nav-label">MENU UTAMA</div>
+  <nav>
+    <button class="nav-item active" data-target="dashboard"><span class="ico">▦</span><span>Dashboard</span></button>
+    <button class="nav-item" data-target="monitor"><span class="ico">◉</span><span>Plant Monitor</span></button>
+    <button class="nav-item" data-target="moisture"><span class="ico">♧</span><span>Soil Moisture</span></button>
+    <button class="nav-item" data-target="watering"><span class="ico">⌁</span><span>Watering System</span></button>
+    <button class="nav-item" data-target="history"><span class="ico">▤</span><span>Growth History</span></button>
+    <button class="nav-item" data-target="simulator"><span class="ico">⚙</span><span>Watering Simulator</span></button>
+    <button class="nav-item" data-target="journal"><span class="ico">✎</span><span>Growth Journal</span></button>
+    <button class="nav-item" data-target="alerts"><span class="ico">♧</span><span>Alert Center</span></button>
+    <button class="nav-item" data-target="analytics"><span class="ico">▥</span><span>Analytics</span></button>
+    <button class="nav-item" data-target="project"><span class="ico">ⓘ</span><span>About Project</span></button>
+  </nav>
+  <div class="side-bottom"><div class="mini-leaf">🌱</div><strong>Small steps, greener future.</strong><p>Monitor your plant's needs and help it grow every day.</p></div>
+</aside>
+<main id="dashboard">
+  <header class="topbar">
+    <div><div class="eyebrow">PLANT CARE OVERVIEW</div><h1>Good day, Plant Parent <span>🌿</span></h1></div>
+    <div class="top-actions"><div class="date-pill" id="dateLabel">📅 Hari ini</div><div class="status-pill">● Demo mode</div><div class="avatar">SP</div></div>
+  </header>
+  <section class="welcome">
+    <div><div class="welcome-tag">YOUR LITTLE GREEN SPACE</div><h2>Let's help your plant thrive.</h2><p>Pantau kelembapan tanah, lihat kondisi tanaman, dan kelola penyiraman dari satu dashboard.</p></div><div class="welcome-plant">🪴</div>
+  </section>
+  <div class="section-head"><h2>Today's Overview</h2><span class="subtle">Data simulasi · belum terhubung ke perangkat</span></div>
+  <section class="metrics">
+    <article class="metric"><div class="metric-top">Soil moisture <span class="metric-icon">💧</span></div><div class="metric-value" id="metricMoisture">62<span>%</span></div><div class="metric-foot"><span class="good" id="moistureState">● Ideal</span> · target 40–70%</div></article>
+    <article class="metric"><div class="metric-top">Plant condition <span class="metric-icon">🌿</span></div><div class="metric-value">Good</div><div class="metric-foot"><span class="good">●</span> Belum dianalisis kamera</div></article>
+    <article class="metric"><div class="metric-top">Watering today <span class="metric-icon">🚿</span></div><div class="metric-value" id="waterCount">0<span> kali</span></div><div class="metric-foot">Penyiraman simulasi hari ini</div></article>
+  </section>
+  <div class="section-head"><h2>Plant monitoring</h2><span class="subtle">Live view akan tersedia setelah kamera dipasang</span></div>
+  <section class="content-grid">
+    <article class="card" id="monitor">
+      <div class="card-title"><h3>Camera preview</h3><span class="tag">SIMULASI</span></div>
+      <div class="camera-preview" id="cameraPreview"><div class="camera-scene"></div><div class="camera-label" id="cameraLabel">◉ CAMERA OFFLINE · DEMO VISUAL</div><video class="camera-video" id="cameraVideo" autoplay playsinline muted></video><div class="pot"></div><div class="soil"></div><div class="stem"></div><div class="leaf l1"></div><div class="leaf l2"></div><div class="leaf l3"></div><div class="leaf l4"></div><div class="camera-time" id="captureTime">Preview ilustrasi tanaman</div></div>
+      <div class="camera-controls"><select class="camera-select" id="cameraSelect" aria-label="Pilih kamera"><option value="">Kamera default perangkat</option></select><button class="button button-primary" id="startCameraBtn">▶ Aktifkan kamera</button><button class="button button-light" id="stopCameraBtn" disabled>■ Matikan</button></div>
+      <p class="camera-help" id="cameraHelp">Kamera membutuhkan izin browser. Di HP, buka website melalui HTTPS agar kamera dapat digunakan.</p>
+      <p class="camera-note">Live preview berasal dari kamera perangkat. Foto yang diambil akan masuk ke Growth History; analisis kondisi tanaman masih berupa demo.</p>
+      <div style="display:flex;gap:9px;margin-top:15px;flex-wrap:wrap"><button class="button button-primary" id="captureBtn">＋ Ambil foto</button><button class="button button-light" id="analysisBtn">✦ Analisis kondisi</button></div>
+      <div class="ai-panel" id="aiPanel">
+        <div class="card-title"><h3>✦ Analisis visual tanaman</h3><span class="tag">BETA</span></div>
+        <p class="camera-note" style="margin-top:7px">Arahkan kamera ke daun dan permukaan tanah, lalu tekan Analisis kondisi.</p>
+        <div class="ai-results">
+          <div class="ai-result"><span>Kondisi tanaman</span><strong id="aiPlantStatus">Belum dianalisis</strong><div class="ai-meter"><i id="aiPlantMeter"></i></div></div>
+          <div class="ai-result"><span>Tampilan tanah</span><strong id="aiSoilStatus">Belum dianalisis</strong><div class="ai-meter"><i id="aiSoilMeter"></i></div></div>
+        </div>
+        <p class="ai-disclaimer" id="aiExplanation">Analisis akan memakai frame kamera. Ini estimasi visual berbasis warna/piksel di browser, bukan diagnosis botani atau pengukuran kadar air sensor.</p>
+      </div>
+    </article>
+    <article class="card" id="moisture">
+      <div class="card-title"><h3>Soil moisture</h3><span class="tag" id="moistureTag">IDEAL</span></div>
+      <div class="moisture-main"><div class="gauge" id="gauge"><div class="gauge-inner"><strong id="gaugeValue">62%</strong><span>kelembapan</span></div></div><div class="moisture-copy"><strong id="moistureTitle">Tanah cukup lembap</strong><p id="moistureDesc">Kondisi simulasi berada dalam rentang target tanaman.</p></div></div>
+      <div class="range-wrap"><label for="moistureSlider"><span>Ubah nilai demo</span><strong id="sliderLabel">62%</strong></label><input type="range" id="moistureSlider" min="0" max="100" value="62"><div class="range-ends"><span>0% · Kering</span><span>100% · Basah</span></div></div>
+    </article>
+  </section>
+  <div class="section-head" id="watering"><h2>Watering system</h2><span class="subtle">Kontrol simulasi</span></div>
+  <section class="content-grid">
+    <article class="card">
+      <div class="card-title"><h3>Automation settings</h3><span class="tag">DEMO</span></div>
+      <div class="automation"><div><strong>Automatic watering</strong><p>Simulasi penyiraman saat tanah kering</p></div><button class="toggle on" id="autoToggle" aria-label="Toggle automatic watering"></button></div>
+      <div class="automation"><div><strong>Daily photo reminder</strong><p>Pengingat foto pertumbuhan tanaman</p></div><button class="toggle on" id="photoToggle" aria-label="Toggle photo reminder"></button></div>
+      <div class="pump-status"><span class="dot" id="pumpDot"></span><span id="pumpText">Pompa simulasi: standby</span></div>
+      <button class="button button-primary" id="waterBtn" style="width:100%;margin-top:16px">▶ Simulasikan penyiraman</button>
+    </article>
+    <article class="card" id="history">
+      <div class="card-title"><h3>Growth history</h3><span class="tag" id="photoCount">0 FOTO</span></div>
+      <div class="history" id="historyList"><div class="history-placeholder" style="grid-column:1/-1">Belum ada foto simulasi.<br>Tekan “Simulasikan foto” untuk mengisi riwayat demo.</div></div>
+    </article>
+  </section>
+
+  <div class="section-head" id="simulator"><h2>Smart Watering Simulator</h2><span class="subtle">Interactive demo · no hardware needed</span></div>
+  <section class="card">
+    <div class="card-title"><h3>Try different soil conditions</h3><span class="tag">SIMULATOR</span></div>
+    <p class="camera-note" style="margin-top:10px">Ubah kelembapan tanah untuk melihat bagaimana sistem mengambil keputusan. Ini simulasi logika, bukan pembacaan sensor sungguhan.</p>
+    <div class="sim-grid" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;margin-top:20px">
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span style="font-size:12px;font-weight:700">Soil moisture level</span><strong id="simValue" style="font-size:25px;color:var(--green)">62%</strong></div>
+        <input type="range" id="simSlider" min="0" max="100" value="62" style="width:100%;margin:18px 0;accent-color:var(--green)">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="button button-light preset" data-val="15">Very dry</button>
+          <button class="button button-light preset" data-val="30">Dry</button>
+          <button class="button button-light preset" data-val="55">Balanced</button>
+          <button class="button button-light preset" data-val="88">Wet</button>
+        </div>
+        <div style="margin-top:23px;padding:14px;background:#f7f9f5;border-radius:12px">
+          <div class="subtle">Illustrative soil state</div>
+          <div id="simState" style="font-weight:750;font-size:14px;margin-top:6px">Balanced moisture</div>
+          <div id="simDesc" class="camera-note" style="margin-top:6px">Moisture is within the example target range.</div>
+        </div>
+      </div>
+      <div style="background:#f7f9f5;border-radius:15px;padding:17px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:210px">
+        <div id="simEmoji" style="font-size:48px">🪴</div>
+        <div id="simAction" style="font-size:15px;font-weight:800;margin-top:10px">No watering needed</div>
+        <div id="simPump" class="camera-note" style="margin-top:7px">Pump status: standby (demo)</div>
+        <div id="simStatusTag" class="tag" style="margin-top:13px">SYSTEM READY</div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--line);margin-top:20px;padding-top:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <span class="subtle">Example threshold: water when moisture is below 30%.</span>
+      <button class="button button-primary" id="simReset">Reset simulation</button>
+    </div>
+  </section>
+
+
+  <div class="section-head" id="journal"><h2>Growth Journal</h2><span class="subtle">Catatan tersimpan di browser ini</span></div>
+  <section class="extra-grid">
+    <article class="card">
+      <div class="card-title"><h3>Tambah pengamatan</h3><span class="tag">JOURNAL</span></div>
+      <form id="journalForm" style="margin-top:16px">
+        <div class="form-grid">
+          <div class="field"><label for="entryDate">Tanggal</label><input id="entryDate" type="date" required></div>
+          <div class="field"><label for="plantHeight">Tinggi tanaman (cm)</label><input id="plantHeight" type="number" min="0" step="0.1" placeholder="Contoh: 12.5"></div>
+          <div class="field"><label for="leafCount">Jumlah daun</label><input id="leafCount" type="number" min="0" step="1" placeholder="Contoh: 6"></div>
+          <div class="field"><label for="entryMoisture">Kelembapan (%)</label><input id="entryMoisture" type="number" min="0" max="100" placeholder="Contoh: 55"></div>
+        </div>
+        <div class="field" style="margin-top:12px"><label for="plantNotes">Catatan</label><textarea id="plantNotes" placeholder="Warna daun, kondisi tanah, perubahan yang terlihat..."></textarea></div>
+        <button class="button button-primary" type="submit" style="width:100%;margin-top:13px">＋ Simpan pengamatan</button>
+      </form>
+      <p class="camera-note">Catatan disimpan secara lokal di browser perangkat ini. Ini bukan penyimpanan cloud.</p>
+    </article>
+    <article class="card">
+      <div class="card-title"><h3>Riwayat pengamatan</h3><span class="tag" id="journalCount">0 CATATAN</span></div>
+      <div id="journalEntries" style="margin-top:14px"><div class="empty-state">Belum ada catatan. Tambahkan pengamatan pertama kamu di sini.</div></div>
+    </article>
+  </section>
+
+  <div class="section-head" id="alerts"><h2>Alert Center</h2><span class="subtle">Peringatan berdasarkan data demo</span></div>
+  <section class="card">
+    <div class="card-title"><h3>System notifications</h3><span class="tag" id="alertBadge">DEMO</span></div>
+    <div id="alertList" style="margin-top:8px">
+      <div class="alert-row"><div class="alert-symbol">ℹ️</div><div><strong>Demo mode aktif</strong><p>Data sensor dan status kamera belum berasal dari perangkat sungguhan.</p></div></div>
+    </div>
+    <p class="camera-note">Peringatan ini membantu demonstrasi. Website belum mengirim notifikasi HP atau membaca sensor fisik.</p>
+  </section>
+
+  <div class="section-head" id="analytics"><h2>Analytics</h2><span class="subtle">Ringkasan dari catatan yang kamu simpan</span></div>
+  <section class="card">
+    <div class="card-title"><h3>Plant growth overview</h3><span class="tag">YOUR JOURNAL</span></div>
+    <div class="statline">
+      <div class="statbox"><span>Total pengamatan</span><strong id="analyticsCount">0</strong></div>
+      <div class="statbox"><span>Tinggi terbaru</span><strong id="analyticsHeight">—</strong></div>
+      <div class="statbox"><span>Jumlah daun terbaru</span><strong id="analyticsLeaves">—</strong></div>
+    </div>
+    <div class="chart-wrap"><canvas id="growthChart" aria-label="Grafik pertumbuhan tanaman"></canvas></div>
+    <p id="chartCaption" class="camera-note">Grafik akan muncul setelah kamu menambahkan catatan tinggi tanaman.</p>
+  </section>
+
+  <div class="section-head" id="project"><h2>About the project</h2><span class="subtle">Project showcase</span></div>
+  <section class="extra-grid">
+    <article class="card">
+      <div class="card-title"><h3>What is SmartPlant Vision?</h3><span class="tag">OVERVIEW</span></div>
+      <p style="font-size:12px;line-height:1.8;color:var(--muted);margin-top:15px">SmartPlant Vision adalah prototipe pemantauan tanaman yang dirancang untuk membantu pengguna mengamati kelembapan tanah dan perkembangan tanaman. Sistem direncanakan menggunakan sensor, pompa air, dan kamera untuk mendukung pemantauan serta penyiraman yang lebih teratur.</p>
+      <div class="statline">
+        <div class="statbox"><span>Monitoring</span><strong>Soil</strong></div>
+        <div class="statbox"><span>Camera</span><strong>ESP32-CAM</strong></div>
+        <div class="statbox"><span>Controller</span><strong>Arduino</strong></div>
+      </div>
+      <p class="camera-note">Fitur perangkat keras masih dalam tahap perakitan. Status yang tampil saat ini merupakan demo.</p>
+    </article>
+    <article class="card">
+      <div class="card-title"><h3>How it works</h3><span class="tag">WORKFLOW</span></div>
+      <div class="project-step"><div class="step-num">1</div><div class="step-copy"><strong>Measure</strong><p>Sensor membaca kondisi kelembapan tanah.</p></div></div>
+      <div class="project-step"><div class="step-num">2</div><div class="step-copy"><strong>Decide</strong><p>Pengendali membandingkan hasil pembacaan dengan ambang yang sudah diuji.</p></div></div>
+      <div class="project-step"><div class="step-num">3</div><div class="step-copy"><strong>Water</strong><p>Jika kondisi memerlukan air, pengendali dapat mengaktifkan pompa melalui driver yang sesuai.</p></div></div>
+      <div class="project-step"><div class="step-num">4</div><div class="step-copy"><strong>Observe</strong><p>Kamera mengambil foto untuk dokumentasi pertumbuhan dan analisis lanjutan.</p></div></div>
+    </article>
+  </section>
+
+  <div class="footer">SMARTPLANT VISION · Prototype website sekolah · Simulator hanya demo, belum terhubung ke hardware</div>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+let moisture=62, wateringCount=0, photos=0, autoOn=true, reminderOn=true;
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),2600)}
+function updateMoisture(v){
+ moisture=Number(v);$('metricMoisture').innerHTML=moisture+'<span>%</span>';$('gaugeValue').textContent=moisture+'%';$('sliderLabel').textContent=moisture+'%';
+ $('gauge').style.background=`conic-gradient(${moisture<35?'#d39a3b':'#397b50'} 0 ${moisture}%, #edf1e9 ${moisture}% 100%)`;
+ let state,title,desc,tag;
+ if(moisture<35){state='● Kering';title='Tanah mulai kering';desc='Tanah mungkin membutuhkan air. Pada perangkat asli, sensor perlu dikalibrasi.';tag='KERING';}
+ else if(moisture>75){state='● Sangat basah';title='Tanah sangat lembap';desc='Belum perlu menambah air pada simulasi ini.';tag='BASAH';}
+ else{state='● Ideal';title='Tanah cukup lembap';desc='Kondisi simulasi berada dalam rentang target tanaman.';tag='IDEAL';}
+ $('moistureState').textContent=state;$('moistureTitle').textContent=title;$('moistureDesc').textContent=desc;$('moistureTag').textContent=tag;
+ if(moisture<35&&autoOn){$('pumpText').textContent='Tanah kering · otomatis akan menyiram (demo)';$('pumpDot').classList.add('on')}else{$('pumpText').textContent='Pompa simulasi: standby';$('pumpDot').classList.remove('on')}
+}
+$('moistureSlider').addEventListener('input',e=>updateMoisture(e.target.value));
+function toggle(el,on){el.classList.toggle('on',on)}
+$('autoToggle').addEventListener('click',()=>{autoOn=!autoOn;toggle($('autoToggle'),autoOn);toast('Automatic watering '+(autoOn?'aktif':'nonaktif')+' (demo)');updateMoisture(moisture)});
+$('photoToggle').addEventListener('click',()=>{reminderOn=!reminderOn;toggle($('photoToggle'),reminderOn);toast('Pengingat foto '+(reminderOn?'aktif':'nonaktif')+' (demo)')});
+$('waterBtn').addEventListener('click',()=>{wateringCount++;$('waterCount').innerHTML=wateringCount+'<span> kali</span>';$('pumpText').textContent='Penyiraman disimulasikan · selesai';$('pumpDot').classList.add('on');toast('Penyiraman simulasi berhasil! Pompa fisik belum terhubung.')});
+$('captureBtn').addEventListener('click',()=>{
+  const video=$('cameraVideo');
+  if(video.srcObject && video.readyState>=2 && video.videoWidth){
+    const canvas=document.createElement('canvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+    canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
+    const photoUrl=canvas.toDataURL('image/jpeg',0.88);addHistoryPhoto(photoUrl,'Foto kamera');
+    toast('Foto kamera berhasil diambil dan ditambahkan ke Growth History.');return;
+  }
+  photos++;const now=new Date();const time=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+  $('captureTime').textContent='Foto demo · '+time;$('photoCount').textContent=photos+' FOTO';
+  if(photos===1)$('historyList').innerHTML='';
+  const item=document.createElement('div');item.className='history-item';
+  item.innerHTML='<div class="history-img">🪴</div><div class="history-info"><strong>Foto demo #'+photos+'</strong><span>'+now.toLocaleDateString('id-ID')+' · '+time+'</span></div>';
+  $('historyList').prepend(item);toast('Kamera belum aktif. Foto ilustrasi demo ditambahkan.');
+});
+function addHistoryPhoto(dataUrl,label){
+  photos++;const now=new Date();const time=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+  $('captureTime').textContent=label+' · '+time;$('photoCount').textContent=photos+' FOTO';
+  if(photos===1)$('historyList').innerHTML='';
+  const item=document.createElement('div');item.className='history-item';
+  const image=document.createElement('img');image.src=dataUrl;image.alt='Hasil foto kamera';
+  const imageWrap=document.createElement('div');imageWrap.className='history-img';imageWrap.appendChild(image);
+  const info=document.createElement('div');info.className='history-info';
+  const title=document.createElement('strong');title.textContent=label+' #'+photos;
+  const meta=document.createElement('span');meta.textContent=now.toLocaleDateString('id-ID')+' · '+time;
+  info.append(title,meta);item.append(imageWrap,info);$('historyList').prepend(item);
+}
+let cameraStream=null;
+async function loadCameras(){
+  if(!navigator.mediaDevices?.enumerateDevices)return;
+  try{const devices=await navigator.mediaDevices.enumerateDevices();const cameras=devices.filter(d=>d.kind==='videoinput');const select=$('cameraSelect');const previous=select.value;
+    select.innerHTML='';cameras.forEach((camera,i)=>{const option=document.createElement('option');option.value=camera.deviceId;option.textContent=camera.label||('Kamera '+(i+1));select.appendChild(option)});
+    if(!cameras.length){const option=document.createElement('option');option.value='';option.textContent='Kamera default perangkat';select.appendChild(option)}
+    if(previous&&cameras.some(c=>c.deviceId===previous))select.value=previous;
+  }catch(e){$('cameraHelp').textContent='Daftar kamera tidak dapat dibaca. Coba izinkan akses kamera di browser.'}
+}
+async function startCamera(){
+  if(!navigator.mediaDevices?.getUserMedia){$('cameraHelp').textContent='Browser tidak mendukung akses kamera atau halaman belum dibuka melalui HTTPS/localhost.';toast('Akses kamera tidak tersedia di halaman ini.');return}
+  try{
+    stopCamera(false);
+    const deviceId=$('cameraSelect').value;
+    const videoConstraint=deviceId?{deviceId:{exact:deviceId}}:{facingMode:{ideal:'environment'}};
+    cameraStream=await navigator.mediaDevices.getUserMedia({audio:false,video:videoConstraint});
+    const video=$('cameraVideo');video.srcObject=cameraStream;await video.play();
+    $('cameraPreview').classList.add('live');$('cameraLabel').textContent='● LIVE CAMERA';$('cameraLabel').style.background='#173b28e8';
+    $('startCameraBtn').disabled=true;$('stopCameraBtn').disabled=false;
+    $('cameraHelp').textContent='Kamera aktif. Pilih kamera lain dari daftar jika perangkat memiliki beberapa kamera.';
+    await loadCameras();
+  }catch(error){
+    let message='Tidak dapat mengaktifkan kamera. Periksa izin kamera dan pastikan tidak sedang digunakan aplikasi lain.';
+    if(error.name==='NotAllowedError')message='Izin kamera ditolak. Izinkan akses kamera melalui pengaturan situs/browser.';
+    else if(error.name==='NotFoundError')message='Tidak ditemukan kamera pada perangkat ini.';
+    else if(error.name==='NotReadableError')message='Kamera sedang digunakan aplikasi lain atau tidak dapat diakses.';
+    else if(error.name==='OverconstrainedError')message='Kamera yang dipilih tidak tersedia. Pilih kamera lain.';
+    $('cameraHelp').textContent=message;toast(message);stopCamera(false);
+  }
+}
+function stopCamera(showMessage=true){
+  if(cameraStream){cameraStream.getTracks().forEach(track=>track.stop());cameraStream=null}
+  const video=$('cameraVideo');if(video)video.srcObject=null;
+  const preview=$('cameraPreview');if(preview)preview.classList.remove('live');
+  const label=$('cameraLabel');if(label){label.textContent='◉ CAMERA OFFLINE · DEMO VISUAL';label.style.background=''}
+  if($('startCameraBtn'))$('startCameraBtn').disabled=false;if($('stopCameraBtn'))$('stopCameraBtn').disabled=true;
+  if(showMessage&&$('cameraHelp'))$('cameraHelp').textContent='Kamera dimatikan. Preview ilustrasi demo ditampilkan kembali.';
+}
+$('startCameraBtn').addEventListener('click',startCamera);
+$('stopCameraBtn').addEventListener('click',()=>stopCamera(true));
+$('cameraSelect').addEventListener('change',()=>{if(cameraStream)startCamera()});
+if(navigator.mediaDevices?.addEventListener)navigator.mediaDevices.addEventListener('devicechange',loadCameras);
+loadCameras();
+window.addEventListener('pagehide',()=>stopCamera(false));
+function analyzePlantFrame(){
+ const video=$('cameraVideo');
+ if(!cameraStream || !video || video.readyState<2 || !video.videoWidth){toast('Aktifkan kamera terlebih dahulu sebelum analisis.');return}
+ const canvas=document.createElement('canvas');
+ const scale=Math.min(1,320/video.videoWidth);canvas.width=Math.max(1,Math.round(video.videoWidth*scale));canvas.height=Math.max(1,Math.round(video.videoHeight*scale));
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(video,0,0,canvas.width,canvas.height);
+ const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+ let green=0,yellow=0,brown=0,soilLike=0,bright=0,total=0;
+ for(let y=0;y<canvas.height;y+=2){for(let x=0;x<canvas.width;x+=2){const i=(y*canvas.width+x)*4,r=data[i],g=data[i+1],b=data[i+2];
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),sat=max===0?0:(max-min)/max,lum=(r+g+b)/3;
+  if(g>r*1.08&&g>b*1.04&&g>55)green++;
+  if(r>g*1.08&&g>b*1.05&&r>75&&g>55)yellow++;
+  if(r>g*1.12&&g>b*1.08&&r>45&&g<150)brown++;
+  if(r>g*1.08&&g>b*1.03&&sat>.16&&r>45&&r<190)soilLike++;
+  if(lum>145)bright++;total++;
+ }}
+ const greenPct=green/total*100, yellowPct=yellow/total*100, brownPct=brown/total*100, soilPct=soilLike/total*100, brightness=bright/total*100;
+ // Indikator visual kasar: dominasi piksel hijau dan proporsi warna kuning/cokelat.
+ const plantScore=Math.max(5,Math.min(95,Math.round(50+greenPct*1.15-yellowPct*.75-brownPct*.55)));
+ let plantText=plantScore>=65?'Tampak cukup sehat':plantScore>=42?'Perlu diamati':'Ada indikasi stres visual';
+ // Tanah hanya dapat dinilai bila cukup banyak piksel bernuansa tanah; gelap bukan bukti kadar air.
+ let soilScore=Math.max(5,Math.min(95,Math.round(100-brightness*.55)));
+ let soilText=soilPct<3?'Tidak terlihat jelas':soilScore>=58?'Tampak gelap / mungkin lembap':soilScore>=38?'Tidak dapat dipastikan':'Tampak terang / mungkin kering';
+ if(soilPct<3)soilScore=0;
+ $('aiPlantStatus').textContent=plantText;$('aiPlantMeter').style.width=plantScore+'%';
+ $('aiSoilStatus').textContent=soilText;$('aiSoilMeter').style.width=soilScore+'%';
+ $('aiExplanation').textContent=`Hasil estimasi visual: area hijau sekitar ${greenPct.toFixed(1)}%, warna kuning/cokelat sekitar ${(yellowPct+brownPct).toFixed(1)}%. Penilaian tanah: ${soilPct<3?'area tanah belum cukup terdeteksi dari frame ini.':'warna/tingkat terang gambar dipakai sebagai petunjuk yang sangat kasar.'} Pastikan daun dan tanah terlihat jelas, dengan pencahayaan cukup. Warna kamera, jenis tanaman, media tanam, dan cahaya dapat mengubah hasil.`;
+ const metric=document.querySelector('.metrics .metric:nth-child(2) .metric-value');if(metric)metric.textContent=plantText;
+ const foot=document.querySelector('.metrics .metric:nth-child(2) .metric-foot');if(foot)foot.textContent='Estimasi visual kamera · bukan diagnosis AI terlatih';
+ toast('Analisis visual selesai. Perhatikan catatan keterbatasannya.');
+}
+$('analysisBtn').addEventListener('click',analyzePlantFrame);
+document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+ const target=btn.dataset.target;const el=target==='dashboard'?document.querySelector('.welcome'):document.getElementById(target);
+ if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+}));
+
+function updateSimulator(value){
+ const v=Number(value);$('simValue').textContent=v+'%';
+ let state,desc,action,pump,emoji,tag,bg;
+ if(v<30){state='Soil is dry';desc='Moisture is below the example threshold. The system would request watering.';action='Watering recommended';pump='Pump status: would turn ON (demo)';emoji='🌵';tag='DRY · WATER';bg='#fff4e0';}
+ else if(v>75){state='Soil is very wet';desc='Moisture is high. Avoid adding more water in this simulation.';action='Watering not needed';pump='Pump status: OFF (demo)';emoji='💧';tag='WET · PAUSE';bg='#eaf3f8';}
+ else{state='Balanced moisture';desc='Moisture is in the example target range. Keep monitoring the plant.';action='No watering needed';pump='Pump status: standby (demo)';emoji='🪴';tag='BALANCED';bg='#edf5e9';}
+ $('simState').textContent=state;$('simDesc').textContent=desc;$('simAction').textContent=action;$('simPump').textContent=pump;$('simEmoji').textContent=emoji;$('simStatusTag').textContent=tag;$('simStatusTag').style.background=bg;
+}
+$('simSlider').addEventListener('input',e=>updateSimulator(e.target.value));
+document.querySelectorAll('.preset').forEach(btn=>btn.addEventListener('click',()=>{$('simSlider').value=btn.dataset.val;updateSimulator(btn.dataset.val)}));
+$('simReset').addEventListener('click',()=>{$('simSlider').value=62;updateSimulator(62);toast('Simulator di-reset ke 62% (demo).')});
+
+
+const JOURNAL_KEY='smartplantVisionJournal_v1';
+function getEntries(){try{return JSON.parse(localStorage.getItem(JOURNAL_KEY)||'[]')}catch(e){return []}}
+function setEntries(entries){try{localStorage.setItem(JOURNAL_KEY,JSON.stringify(entries));return true}catch(e){toast('Browser tidak mengizinkan penyimpanan lokal.');return false}}
+function safeText(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderJournal(){
+ const entries=getEntries().sort((a,b)=>b.date.localeCompare(a.date));$('journalCount').textContent=entries.length+' CATATAN';$('analyticsCount').textContent=entries.length;
+ const host=$('journalEntries');
+ if(!entries.length){host.innerHTML='<div class="empty-state">Belum ada catatan. Tambahkan pengamatan pertama kamu di sini.</div>'}
+ else{host.innerHTML=entries.map(e=>`<div class="journal-entry"><div class="entry-icon">🌱</div><div class="entry-body"><strong>${safeText(e.date)}</strong><p>${e.height!==''?'Tinggi: '+safeText(e.height)+' cm · ':''}${e.leaves!==''?'Daun: '+safeText(e.leaves)+' · ':''}${e.moisture!==''?'Kelembapan: '+safeText(e.moisture)+'%':''}</p>${e.notes?`<p>${safeText(e.notes)}</p>`:''}<div class="entry-meta">Catatan pengamatan</div></div><button class="delete-entry" data-delete="${e.id}">Hapus</button></div>`).join('')}
+ host.querySelectorAll('[data-delete]').forEach(btn=>btn.addEventListener('click',()=>{if(setEntries(getEntries().filter(e=>e.id!==btn.dataset.delete))){renderJournal();toast('Catatan dihapus.')}}));
+ const withHeight=entries.filter(e=>e.height!==''&&Number.isFinite(Number(e.height))).sort((a,b)=>a.date.localeCompare(b.date));
+ $('analyticsHeight').textContent=withHeight.length?withHeight[withHeight.length-1].height+' cm':'—';
+ const withLeaves=entries.filter(e=>e.leaves!=='').sort((a,b)=>a.date.localeCompare(b.date));
+ $('analyticsLeaves').textContent=withLeaves.length?withLeaves[withLeaves.length-1].leaves:'—';
+ drawGrowthChart(withHeight);
+}
+function drawGrowthChart(entries){
+ const canvas=$('growthChart');if(!canvas)return;
+ const rect=canvas.getBoundingClientRect();const dpr=window.devicePixelRatio||1;canvas.width=Math.max(300,rect.width*dpr);canvas.height=Math.max(160,rect.height*dpr);
+ const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);const w=canvas.width/dpr,h=canvas.height/dpr;
+ ctx.clearRect(0,0,w,h);const pad={l:35,r:14,t:18,b:30},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+ ctx.font='10px system-ui';ctx.fillStyle='#879388';ctx.strokeStyle='#e8eee5';ctx.lineWidth=1;
+ if(entries.length<1){ctx.textAlign='center';ctx.fillText('Tambahkan data tinggi tanaman untuk melihat grafik',w/2,h/2);$('chartCaption').textContent='Belum ada data tinggi tanaman untuk digrafikkan.';return}
+ const vals=entries.map(e=>Number(e.height));let min=Math.min(...vals),max=Math.max(...vals);if(min===max){min=Math.max(0,min-1);max=max+1}
+ for(let i=0;i<5;i++){const y=pad.t+ch*i/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.textAlign='right';ctx.fillText((max-(max-min)*i/4).toFixed(1),pad.l-7,y+3)}
+ const points=vals.map((v,i)=>({x:pad.l+(entries.length===1?cw/2:cw*i/(entries.length-1)),y:pad.t+ch*(max-v)/(max-min)}));
+ ctx.strokeStyle='#397b50';ctx.lineWidth=2.5;ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+ points.forEach((p,i)=>{ctx.fillStyle='#397b50';ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill();if(entries.length<=7){ctx.fillStyle='#68786b';ctx.textAlign='center';ctx.fillText(entries[i].date.slice(5),p.x,h-9)}});
+ $('chartCaption').textContent=`Grafik menggunakan ${entries.length} catatan tinggi tanaman yang kamu simpan. Catatan merupakan hasil input manual.`;
+}
+$('journalForm').addEventListener('submit',e=>{
+ e.preventDefault();const entry={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),date:$('entryDate').value,height:$('plantHeight').value,leaves:$('leafCount').value,moisture:$('entryMoisture').value,notes:$('plantNotes').value.trim()};
+ const entries=getEntries();entries.push(entry);if(setEntries(entries)){e.target.reset();$('entryDate').value=new Date().toISOString().slice(0,10);renderJournal();toast('Pengamatan berhasil disimpan di browser ini.')}
+});
+function renderAlerts(){
+ const list=[];if(moisture<30)list.push({icon:'💧',title:'Tanah kering (simulasi)',desc:'Nilai demo berada di bawah 30%. Pada perangkat asli, ambang perlu dikalibrasi menggunakan sensor dan jenis tanah.'});
+ if(moisture>75)list.push({icon:'🌊',title:'Kelembapan tinggi (simulasi)',desc:'Nilai demo di atas 75%. Hindari menambah air pada simulasi ini.'});
+ if(!list.length)list.push({icon:'✅',title:'Tidak ada kondisi khusus (demo)',desc:'Nilai kelembapan simulasi berada pada rentang contoh. Data belum berasal dari sensor asli.'});
+ list.push({icon:'📷',title:'Kamera belum terhubung',desc:'Foto tanaman yang ditampilkan masih berupa ilustrasi. ESP32-CAM belum dikonfigurasi.'});
+ $('alertList').innerHTML=list.map(a=>`<div class="alert-row"><div class="alert-symbol">${a.icon}</div><div><strong>${a.title}</strong><p>${a.desc}</p></div></div>`).join('');
+ $('alertBadge').textContent=list.length+' ALERT';
+}
+const originalUpdateMoisture=updateMoisture;
+updateMoisture=function(v){originalUpdateMoisture(v);renderAlerts()};
+window.addEventListener('resize',()=>drawGrowthChart(getEntries().filter(e=>e.height!==''&&Number.isFinite(Number(e.height))).sort((a,b)=>a.date.localeCompare(b.date))));
+$('entryDate').value=new Date().toISOString().slice(0,10);
+renderJournal();renderAlerts();
+
+$('dateLabel').textContent='📅 '+new Date().toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+</script>
+</body>
+</html>
